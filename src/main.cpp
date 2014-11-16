@@ -47,7 +47,8 @@ using std::pair;
 #include "ForEl.h"
 #include "Graph/MST.h"
 
-#define RMAX 200 //m
+#define RMAX 100 //m
+const double RForEl = 10;
 
 extern void clearVector(vector<Point*> &pnts);
 extern void filterClustersWithOnePoint(vector<Point*> &pnts);
@@ -139,12 +140,13 @@ int main(int argc, char *argv[]) {
 	max.setMinMax(sources, false);
 	degreesToX(sources, (max.phi+min.phi)/2, (max.tet+min.tet)/2);
 
-	Filter::deleteSinglePoints(sources,RMAX*RMAX);
+	//Filter::hideSinglePoints(sources,RMAX);
 
 	vector<Point*> clusters;
 	Cleaner< vector<Point*> > cleanerClusters(&clusters, HelpFunctions::clearVector);
-	clusterizationFOREL<Point>(clusters, sources, RFOREL);
-
+	clusterizationFOREL<Point>(clusters, sources, RForEl);
+	//Filter::filtration(clusters,1);
+	
 	GraphP graph;
 	graph.setVertices_ptr(clusters.begin(),clusters.end());
 	clusterizationMST(graph);
@@ -157,7 +159,7 @@ int main(int argc, char *argv[]) {
 		ax[1] = atoi(argv[2]);
 	}*/
 	
-	//Filter::filtration(clusters,0);
+	
 	//cout<<"clusters"<<endl;
 	//statistics(clusters);
 	//cout<<"sources"<<endl;
@@ -171,7 +173,7 @@ int main(int argc, char *argv[]) {
 	
 	QApplication app(argc,argv);
 	
-	Widget< Point > widget(const_cast<vector<vertex *> *>(&graph.vertices()), ax[0], ax[1], min, max);
+	Widget< Point > widget(&sources, ax[0], ax[1], min, max);
 	widget.setGraph(&graph);
 	widget.setRanges(x1,y1,x2,y2);
 	widget.show();

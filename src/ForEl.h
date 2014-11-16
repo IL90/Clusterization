@@ -32,14 +32,24 @@ using std::vector;
 #include <cstdlib>
 
 template<typename Content>
-void clusterizationFOREL(vector<Content*> &clusters, vector<Content*> sources/*duplicate*/, double R) {//formal element
-	cout<<"clusterizationFOREL("<<sources.size()<<"-->";
+void clusterizationFOREL(vector<Content*> &clusters, vector<Content*> &sources2, double R) {//formal element
+	
 	double R2 = R*R;
 	int size;
 	srand(time(NULL));
+	vector<Content*> sources;
+	for(typename vector<Content*>::iterator it = sources2.begin(); it != sources2.end(); ++it)
+		if(!(*it)->isHide()) sources.push_back(*it);
+	cout<<"clusterizationFOREL("<<sources.size()<<"-->";
 	Content tmp, tmp2;
 	vector<Content**> ptrs;
 	int dim = tmp.dim();
+
+	for(vector<Point*>::iterator it = clusters.begin(); it != clusters.end(); ++it) {
+		delete (*it)->psrc();
+		delete (*it);
+	}
+	clusters.clear();
 
 	while(!sources.empty()) {
 		size = sources.size();

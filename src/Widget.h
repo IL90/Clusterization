@@ -39,15 +39,15 @@ using std::list;
 
 
 typedef Event2 Ev;
-#define RFOREL 10
+extern const double RForEl;
 
 template< typename Point >
 class Widget: public QWidget {
 	typedef nmsgraph::Graph<Point> GraphP;
-	typedef typename GraphP::CVertex CVertex;
+	typedef vector<Point*> CPoint;
 	
 public:
-	Widget(CVertex *pdat, int ax1, int ax2, const Ev &min_, const Ev &max_, QWidget *parent = NULL) : QWidget(parent) {
+	Widget(CPoint *pdat, int ax1, int ax2, const Ev &min_, const Ev &max_, QWidget *parent = NULL) : QWidget(parent) {
 		setGeometry(100,100,700,700);
 		showflag = true;
 		for(int i = 0; i < 10; ++i) flagnumber[i] = false;
@@ -107,8 +107,8 @@ public:
 	
 	void keyPressEvent(QKeyEvent* pe);
 
-	void setData(CVertex *ev,const Ev &min_, const Ev &max_) {
-		pdata = ev;
+	void setData(CPoint *ev,const Ev &min_, const Ev &max_) {
+		psources = ev;
 		min = min_;
 		max = max_;
 	}
@@ -140,7 +140,7 @@ private:
 	double xzoom,yzoom,xzs,yzs;
 
 	int axises[2];
-	CVertex *pdata;
+	CPoint *psources;
 	GraphP *_pgraph;
 	bool showflag;
 	bool flagnumber[10];
@@ -149,22 +149,27 @@ private:
 
 template< typename Point >
 void Widget<Point>::paintData(QPainter* p) {
-	if(!pdata) return;
+	if(!psources) return;
 	double rx,ry;
-	rx = ry = RFOREL;
+	rx = ry = RForEl;
 	rx *= xscale;
 	ry *= yscale;
 	if(rx < 1) rx = 1;
 	if(ry < 1) ry = 1;
-	//int q;
-	typename CVertex::const_iterator it;//,it2,it3;
 	typedef typename GraphP::CEdge CEdge;
+	typedef typename GraphP::CVertex CVertex;
 
-	//Point* cptr;
+
 	p->setBrush(QBrush(Qt::NoBrush));
-	//bool brek;
 
-	
+	//draw init Points
+	p->setPen(QColor(192,0,0));
+	for(typename CPoint::const_iterator it = (*psources).begin(); it != (*psources).end(); ++it) {
+		if((*it)->isHide()) continue;
+		p->drawRect(QRectF(xsh((*it)->x(0)), ysh((*it)->x(1)),1,1));
+	}
+
+	//draw Edges MST
 	for(typename CEdge::const_iterator eit = _pgraph->edges().begin(); eit != _pgraph->edges().end(); ++eit) {
 		p->setPen(Qt::white);
 		if((*eit)->getProperty().ruptured()) p->setPen(QColor(125,125,125));
@@ -175,17 +180,18 @@ void Widget<Point>::paintData(QPainter* p) {
 			ysh( (*eit)->rvertex()->ptr()->x(1) )
 		);
 	}
-
-	for(it = (*pdata).begin(); it != (*pdata).end(); ++it) {
+	//draw Vertices MST
+	for(typename CVertex::const_iterator it = _pgraph->vertices().begin(); it != _pgraph->vertices().end(); ++it) {
 		/*
-		cptr = (*it);
-		q = cptr->weight();
+		q = (*it)->weight();
 		brek = true;
 		for(int i = 0; i < 10; ++i)
 			if(flagnumber[i]) if(q == i+1) {brek = false; break;}
 		if(!brek) continue;
 		*/
 		
+		p->setPen(Qt::black);
+		p->drawEllipse(QRectF(xsh((*it)->ptr()->x(0))-rx, ysh((*it)->ptr()->x(1))-ry, 2*rx, 2*ry));
 		p->setPen(Qt::black);
 		p->drawRect(QRectF(xsh((*it)->ptr()->x(0)), ysh((*it)->ptr()->x(1)),1,1));
 
@@ -194,7 +200,7 @@ void Widget<Point>::paintData(QPainter* p) {
 		//p->setPen(ColorFunctions::colorHour(hour));
 		//if((*it)->src->isNight()) 
 		//	p->setPen(Qt::white);		
-		/*if(it2!=(*pdata).end()) {
+		/*if(it2!=(*psources).end()) {
 			if((*it2)->src->isNight()) 
 				p->setPen(Qt::white);
 			p->drawLine(xsh( (*it)->x(0) ), ysh( (*it)->x(1) ), xsh( (*it2)->x(0) ), ysh( (*it2)->x(1) ));			
@@ -223,6 +229,8 @@ void Widget<Point>::paintData(QPainter* p) {
 			p->drawRect(QRectF(xsh((*it2)->x(0)), ysh((*it2)->x(1)),1,1));
 		}*/
 	}
+
+
 }
 
 

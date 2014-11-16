@@ -37,15 +37,15 @@ class Event;
 class Point {
 	public:
 		typedef vector<Point*> Container;
-		Point() {
+		Point() : _isHide(false) {
 			_x.resize(_dim, 0);
 			setSrc(0);
 		}
-		Point(Event *pev) {
+		Point(Event *pev) : _isHide(false) {
 			_x.resize(_dim, 0);
 			setSrc(pev);
 		}
-		Point(Point* ptr) {
+		Point(Point* ptr) : _isHide(false) {
 			_x.resize(_dim, 0);
 			setSrc(0);
 			_pnts.push_back(ptr);
@@ -67,14 +67,6 @@ class Point {
 		const Container &pnts() const {return _pnts;}
 
 		int dim() const {return _dim;}
-		
-		/*Event & src() {
-			if(_src == 0) {
-				cout<<"Error: Point::_src = 0"<<endl;
-				assert(0);
-			}
-			return *_src;
-		}*/
 		Event *psrc() {
 			return _src;
 		}
@@ -88,11 +80,14 @@ class Point {
 		static double ro(const Point &lhs, const Point &rhs) {
 			return sqrt(ro2(lhs,rhs));
 		}
+		void setHide(bool b) {_isHide = b;}
+		bool isHide() {return _isHide;}
 	private:
 		static const int _dim;//dimension
 		Event *_src;//content
 		vector<double> _x;//coords
 		Container _pnts;
+		bool _isHide;
 };
 
 
@@ -126,25 +121,28 @@ public:
 		for_each(pnts.begin(), pnts.end(), vfunc);
 		pnts.erase( std::remove(pnts.begin(), pnts.end(), static_cast<Point*>(0)), pnts.end()); 
 	}
-	static void deleteSinglePoints(vector<Point*> &pnts, double Rmax2) {
-		cout<<"deleteSinglePoints("<<pnts.size()<<"-->";
+	static void hideSinglePoints(vector<Point*> &pnts, double Rmax) {
+		cout<<"hideSinglePoints("<<pnts.size();
 		if(pnts.empty()) return;
+		double Rmax2 = Rmax*Rmax;
 		bool flag;
 		vector<Point*>::iterator it1, it2;
 		for(it1 = pnts.begin(); it1 != pnts.end(); ++it1) {
+			if((*it1)->isHide()) continue;
 			flag = false;
 			for(it2 = it1; it2 != pnts.end(); ++it2) {
 				if(it1 == it2) continue;
+				if((*it2)->isHide()) continue;
 				if(Point::ro2(*(*it1),*(*it2)) < Rmax2) {
-					flag = true; 
+					flag = true;
 					break;
 				}
 			}
-			if(!flag) 
-				HelpFunctions::delPtr(*it1);
+
+			if(!flag)
+				(*it1)->setHide(true);
 		}
-		pnts.erase(std::remove( pnts.begin(), pnts.end(), static_cast<Point*>(0) ), pnts.end()); 
-		cout<<pnts.size()<<")"<<endl;
+		cout<<")"<<endl;
 	}
 private:
 	static void filterNight(Point* &ptr);
