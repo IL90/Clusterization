@@ -32,33 +32,35 @@ using std::vector;
 #include <cstdlib>
 
 template<typename Content>
-void clusterizationFOREL(vector<Content*> &clusters, vector<Content*> &sources2, double R) {//formal element
-	
+void clusterizationFOREL(vector<Content> &clusters, const vector<Content*> &sources2, double R) {//formal element
+	typedef vector<Content> Vval;
+	typedef vector<Content*> Vptr;
 	double R2 = R*R;
 	int size;
 	srand(time(NULL));
-	vector<Content*> sources;
-	for(typename vector<Content*>::iterator it = sources2.begin(); it != sources2.end(); ++it)
+	Vptr sources;
+	
+	for(typename Vptr::const_iterator it = sources2.begin(); it != sources2.end(); ++it)
 		if(!(*it)->isHide()) sources.push_back(*it);
+
 	cout<<"clusterizationFOREL("<<sources.size()<<"-->";
+	if(sources.empty()) {cout<<"0)"<<endl; return;}
 	Content tmp, tmp2;
 	vector<Content**> ptrs;
 	int dim = tmp.dim();
 
-	for(vector<Point*>::iterator it = clusters.begin(); it != clusters.end(); ++it) {
-		delete (*it)->psrc();
-		delete (*it);
+	for(typename Vval::iterator it = clusters.begin(); it != clusters.end(); ++it) {
+		delete (*it).psrc();
 	}
 	clusters.clear();
 
 	while(!sources.empty()) {
 		size = sources.size();
-		clusters.push_back(new Content);//new empty cluster
-		Content &claster = *clusters.back();
+		clusters.push_back(Content());//new empty cluster
+		Content &cluster = clusters.back();
 		tmp.coords() = sources[rand()%size]->coords();//choose first point
 		
 		do {
-
 			tmp2.coords() = tmp.coords();
 			ptrs.clear();
 			for(int i = 0; i < size; ++i) //find points into area
@@ -76,10 +78,10 @@ void clusterizationFOREL(vector<Content*> &clusters, vector<Content*> &sources2,
 		} while(tmp.coords() != tmp2.coords());	
 		
 		//fill cluster
-		claster.coords() = tmp.coords();
+		cluster.coords() = tmp.coords();
 		int size2 = ptrs.size();
 		for(int i = 0; i < size2; ++i) {
-			claster.pnts().push_back(*(ptrs[i]));
+			cluster.pnts().push_back(*(ptrs[i]));
 			*(ptrs[i]) = 0;
 		}
 		//remove used points

@@ -35,11 +35,13 @@ using std::list;
 #include <QKeyEvent>
 
 #include "Cluster.h"
+#include "ForEl.h"
 #include "Graph/Graph.h"
 
+extern double RForEl;//m
+extern double RSingle;//m
 
 typedef Event2 Ev;
-extern const double RForEl;
 
 template< typename Point >
 class Widget: public QWidget {
@@ -56,7 +58,9 @@ public:
 		xzoom=1.0;
 		yzoom=1.0;
 		xzs = yzs = 0.0;
+
 		setData(pdat,min_,max_);
+		
 		setAxises(ax1, ax2);
 	}
 	~Widget() {}
@@ -105,9 +109,18 @@ public:
 		if(showflag) paintData(&painter);
 	}
 	
+	void computeGraph() {
+		assert(psources);
+		Filter::hideSinglePoints(*psources,RSingle);
+		clusterizationFOREL<Point>(clusters, *psources, RForEl);
+		graph.setVertices(clusters.begin(),clusters.end());
+		clusterizationMST(graph);
+	}
+
 	void keyPressEvent(QKeyEvent* pe);
 
 	void setData(CPoint *ev,const Ev &min_, const Ev &max_) {
+		assert(ev);
 		psources = ev;
 		min = min_;
 		max = max_;
@@ -124,9 +137,6 @@ public:
 		yrange[0] = y0;
 		yrange[1] = y1;
 	}
-	void setGraph(GraphP *pgr) {
-		_pgraph = pgr;
-	}
 private:
 	double fields[2];
 
@@ -140,8 +150,11 @@ private:
 	double xzoom,yzoom,xzs,yzs;
 
 	int axises[2];
+
 	CPoint *psources;
-	GraphP *_pgraph;
+	vector<Point> clusters;
+	GraphP graph;
+	
 	bool showflag;
 	bool flagnumber[10];
 	Ev min, max;
@@ -163,73 +176,40 @@ void Widget<Point>::paintData(QPainter* p) {
 	p->setBrush(QBrush(Qt::NoBrush));
 
 	//draw init Points
+	cerr<<"draw init Points"<<endl;
 	p->setPen(QColor(192,0,0));
 	for(typename CPoint::const_iterator it = (*psources).begin(); it != (*psources).end(); ++it) {
+		assert(*it);
 		if((*it)->isHide()) continue;
 		p->drawRect(QRectF(xsh((*it)->x(0)), ysh((*it)->x(1)),1,1));
 	}
-
+	cerr<<"draw Edges MST"<<endl;
 	//draw Edges MST
-	for(typename CEdge::const_iterator eit = _pgraph->edges().begin(); eit != _pgraph->edges().end(); ++eit) {
+	for(typename CEdge::const_iterator eit = graph.edges().begin(); eit != graph.edges().end(); ++eit) {
 		p->setPen(Qt::white);
+		assert(*eit);
 		if((*eit)->getProperty().ruptured()) p->setPen(QColor(125,125,125));
+		assert((*eit)->lvertex().lock());
+		assert((*eit)->rvertex().lock());
+		assert((*eit)->lvertex().lock()->ptr());
+		assert((*eit)->rvertex().lock()->ptr());
 		p->drawLine(
-			xsh( (*eit)->lvertex()->ptr()->x(0) ), 
-			ysh( (*eit)->lvertex()->ptr()->x(1) ), 
-			xsh( (*eit)->rvertex()->ptr()->x(0) ), 
-			ysh( (*eit)->rvertex()->ptr()->x(1) )
+			xsh( (*eit)->lvertex().lock()->ptr()->x(0) ), 
+			ysh( (*eit)->lvertex().lock()->ptr()->x(1) ), 
+			xsh( (*eit)->rvertex().lock()->ptr()->x(0) ), 
+			ysh( (*eit)->rvertex().lock()->ptr()->x(1) )
 		);
 	}
 	//draw Vertices MST
-	for(typename CVertex::const_iterator it = _pgraph->vertices().begin(); it != _pgraph->vertices().end(); ++it) {
-		/*
-		q = (*it)->weight();
-		brek = true;
-		for(int i = 0; i < 10; ++i)
-			if(flagnumber[i]) if(q == i+1) {brek = false; break;}
-		if(!brek) continue;
-		*/
-		
+	cerr<<"draw Vertices MST"<<endl;
+	for(typename CVertex::const_iterator it = graph.vertices().begin(); it != graph.vertices().end(); ++it) {
 		p->setPen(Qt::black);
+		assert(*it);
+		assert((*it)->ptr());
 		p->drawEllipse(QRectF(xsh((*it)->ptr()->x(0))-rx, ysh((*it)->ptr()->x(1))-ry, 2*rx, 2*ry));
 		p->setPen(Qt::black);
 		p->drawRect(QRectF(xsh((*it)->ptr()->x(0)), ysh((*it)->ptr()->x(1)),1,1));
-
-
-		//hour = (*it)->src->datetime.time().hour() + (*it)->src->datetime.time().minute()/60.0 +(*it)->src->datetime.time().second()/3600.0;
-		//p->setPen(ColorFunctions::colorHour(hour));
-		//if((*it)->src->isNight()) 
-		//	p->setPen(Qt::white);		
-		/*if(it2!=(*psources).end()) {
-			if((*it2)->src->isNight()) 
-				p->setPen(Qt::white);
-			p->drawLine(xsh( (*it)->x(0) ), ysh( (*it)->x(1) ), xsh( (*it2)->x(0) ), ysh( (*it2)->x(1) ));			
-			//p->drawLine(xsh( (*it)->src->axis(axises[0]) ), ysh( (*it)->src->axis(axises[1]) ), xsh( (*it2)->src->axis(axises[0]) ), ysh( (*it2)->src->axis(axises[1]) ));
-		}*/
-		//p->drawPoint(xsh( (*it)->axis(axises[0]) ), ysh( (*it)->axis(axises[1]) ));
-
-
-		//draw Claster Ellipses
-		//p->setPen(ColorFunctions::colorWeight(*it));
-		//p->drawEllipse(QRectF(xsh((*it)->x(0))-rx, ysh((*it)->x(1))-ry, 2*rx, 2*ry));
-
-		//draw Claster Lines
-		/*if(cptr->getAggregate().size() > 1) {
-			vector<Point*> tmp = cptr->getAggregate();
-			std::sort(tmp.begin(),tmp.end(),compareTime);
-			for(it2 = tmp.begin(), it3 = it2, ++it3; it3 != tmp.end(); ++it2,++it3) {
-				p->setPen(ColorFunctions::colorInterval(*it2, *it3));
-				p->drawLine(xsh((*it2)->x(0)), ysh((*it2)->x(1)),xsh((*it3)->x(0)), ysh((*it3)->x(1)));
-			}
-		}*/
-		
-		/*for(it2 = cptr->getAggregate().begin(); it2 != cptr->getAggregate().end(); ++it2) {
-			if(!(*it2)->src().isNight()) continue;
-			p->setPen(ColorFunctions::colorVelocity(*it2));
-			p->drawRect(QRectF(xsh((*it2)->x(0)), ysh((*it2)->x(1)),1,1));
-		}*/
 	}
-
 
 }
 
@@ -266,55 +246,25 @@ void Widget<Point>::keyPressEvent(QKeyEvent* pe) {
 			showflag = !showflag;
 			qDebug()<<"Key_Return";
 		break;
-		case Qt::Key_1:
-			flagnumber[0] = !flagnumber[0];
-			qDebug()<<"Key_1 = "<<flagnumber[0];
-		break;
-		case Qt::Key_2:
-			flagnumber[1] = !flagnumber[1];
-			qDebug()<<"Key_2 = "<<flagnumber[1];
-		break;
-		case Qt::Key_3:
-			flagnumber[2] = !flagnumber[2];
-			qDebug()<<"Key_3 = "<<flagnumber[2];
-		break;
-		case Qt::Key_4:
-			flagnumber[3] = !flagnumber[3];
-			qDebug()<<"Key_4 = "<<flagnumber[3];
-		break;
-		case Qt::Key_5:
-			flagnumber[4] = !flagnumber[4];
-			qDebug()<<"Key_5 = "<<flagnumber[4];
-		break;
-		case Qt::Key_6:
-			flagnumber[5] = !flagnumber[5];
-			qDebug()<<"Key_6 = "<<flagnumber[5];
-		break;
-		case Qt::Key_7:
-			flagnumber[6] = !flagnumber[6];
-			qDebug()<<"Key_7 = "<<flagnumber[6];
-		break;
-		case Qt::Key_8:
-			flagnumber[7] = !flagnumber[7];
-			qDebug()<<"Key_8 = "<<flagnumber[7];
-		break;
-		case Qt::Key_9:
-			flagnumber[8] = !flagnumber[8];
-			qDebug()<<"Key_9 = "<<flagnumber[8];
-		break;
-		case Qt::Key_0:
-			flagnumber[9] = !flagnumber[9];
-			qDebug()<<"Key_0 = "<<flagnumber[9];
-		break;
 		case Qt::Key_Minus:
-			for(int i = 0; i < 10; ++i) 
-				flagnumber[i] = false;
-			qDebug()<<"Key_Minus";
+			RSingle /= 1.25;
+			computeGraph();
+			qDebug()<<"Key_Minus RSingle = "<<RSingle;
 		break;
 		case Qt::Key_Equal:
-			for(int i = 0; i < 10; ++i) 
-				flagnumber[i] = true;
-			qDebug()<<"Key_Equal";
+			RSingle *= 1.25;
+			computeGraph();
+			qDebug()<<"Key_Equal RSingle = "<<RSingle;
+		break;
+			case Qt::Key_Less:
+			RForEl /= 1.25;
+			computeGraph();
+			qDebug()<<"Key_Less RForEl = "<<RForEl;
+		break;
+		case Qt::Key_Greater:
+			RForEl *= 1.25;
+			computeGraph();
+			qDebug()<<"Key_Greater RForEl = "<<RForEl;
 		break;
 		case Qt::Key_Escape:
 			exit(0);
@@ -322,7 +272,7 @@ void Widget<Point>::keyPressEvent(QKeyEvent* pe) {
 		default:
 			QWidget::keyPressEvent(pe);
 	}
-	repaint();
+	update();
 }
 
 

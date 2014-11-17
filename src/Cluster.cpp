@@ -62,6 +62,7 @@ void HelpFunctions::clearVectorAndSrc(vector<Point*> &pnts) {
 	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
 		delete (*it)->psrc();
 		delete (*it);
+		*it = NULL;
 	}
 }
 

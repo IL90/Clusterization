@@ -27,6 +27,9 @@ using std::map;
 #include <utility>
 using std::pair;
 
+double RForEl = 10;//m
+double RSingle = 50;//m
+
 class ColorFunctions {
 public:
 	static QColor colorHour(double h, int localZone = 3) {

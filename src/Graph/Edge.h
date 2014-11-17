@@ -32,6 +32,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+#include <tr1/memory>
+
 namespace nmsgraph {
 
 template<typename Content>
@@ -68,20 +70,20 @@ class Edge {
 	public:
 		typedef Vertex<Content> vertex;
 
-		Edge(vertex *lptr, vertex *rptr, double cost)
-		 : _lvertex(lptr), _rvertex(rptr), _property( std::auto_ptr<PropertyEdge>(new PropertyEdge(cost)) ) {
+		Edge(const std::tr1::shared_ptr<vertex> &lptr, const std::tr1::shared_ptr<vertex> &rptr, double cost)
+		 : _lvertex(lptr), _rvertex(rptr), _property(cost) {
 		 	getProperty().name = countObj;
 		 	++countObj;
 		 }
 
-		/*friend void compareCost(const Edge &lhs,const Edge &rhs) {
-			return lhs.getProperty().cost() < rhs.getProperty().cost();
-		}*/
-
-		vertex *lvertex() const {return _lvertex;}
-		vertex *rvertex() const {return _rvertex;}
-		const PropertyEdge &getProperty() const {return *_property.get();}
-		PropertyEdge &getProperty() {return *_property.get();}
+		std::tr1::weak_ptr<vertex> lvertex() const {return _lvertex;}
+		std::tr1::weak_ptr<vertex> rvertex() const {return _rvertex;}
+		const PropertyEdge &getProperty() const {
+			return _property;
+		}
+		PropertyEdge &getProperty() {
+			return _property;
+		}
 		void printName() const {
 			cout<<"Edge("<<getProperty().name<<")["<<getProperty().lcount()<<"; "<<getProperty().rcount()<<"]";
 			if(getProperty().ruptured()) cout<<" ruptured";
@@ -102,9 +104,9 @@ class Edge {
 		Edge &operator=(const Edge&);
 	private:
 		static int countObj;
-		vertex *_lvertex;
-		vertex *_rvertex;
-		std::auto_ptr< PropertyEdge > _property;
+		std::tr1::weak_ptr<vertex> _lvertex;
+		std::tr1::weak_ptr<vertex> _rvertex;
+		PropertyEdge _property;
 };
 template<typename Content>
 int Edge<Content>::countObj = 0;

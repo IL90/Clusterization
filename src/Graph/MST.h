@@ -28,12 +28,15 @@ Contact e-mail <arkhipovsky.ilya@yandex.ru>
 #include <ctime>
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 #include <functional>
 #include <list>
 using std::list;
 #include <vector>
 using std::vector;
+
+#include <tr1/memory>
 
 #include "Graph.h"
 
@@ -56,38 +59,45 @@ public:
 
 template<typename Content>
 void createMST_N2(Graph<Content> &graph) {
+	cerr<<"createMST_N2"<<endl;
 	typedef Graph<Content> graph_t;
 	typedef typename graph_t::vertex vertex_t;
 	typedef typename graph_t::edge   edge_t;
 
 	int FullSize = graph.vertices().size();
-	
+	if(FullSize <= 1) {
+		cerr<<"/createMST_N2(FullSize <= 1)"<<endl;
+		return;
+	}
+
 	Ed tmped;
 	int index = 0;
-	const vector<vertex_t*> &vertices = graph.vertices();
+	const vector< std::tr1::shared_ptr<vertex_t> > &vertices = graph.vertices();
 	typename vector< Ed >::iterator eit;
 	vector<Ed> edges(FullSize - 1);
 	vector<bool> used(FullSize, false);
-
 	while(!edges.empty()) {//O(N^2)
 		used[index] = true;
 
 		for(int i = 0; i < FullSize; ++i) {//O(N)
-			if(used[i]) continue;
+			if(used[i]) 
+				continue;
 			tmped.set( index, i, Content::ro2(*vertices[index]->ptr(), *vertices[i]->ptr()) );
 			edges[i] = std::min(edges[i], tmped);
 		}
-		
 		eit = std::min_element(edges.begin(), edges.end());//O(N)
-		if((*eit).cost == 1.0/0.0) break;
+		if(eit == edges.end() || (*eit).cost == 1.0/0.0) 
+			break;
 		graph.addEdge(vertices[(*eit).i[0]], vertices[(*eit).i[1]], sqrt((*eit).cost));
 		(*eit).cost = 1.0/0.0;
 		index = (*eit).i[1];
 	}
+	cerr<<"/createMST_N2"<<endl;
 }
 
 template<typename Content>
 void setIntensity(Graph<Content> &graph) {
+	cerr<<"setIntensity"<<endl;
 	typedef typename Graph<Content>::vertex vertex;
 	typedef typename Graph<Content>::edge edge;
 	typedef typename Graph<Content>::CVertex CVertex;
@@ -161,20 +171,22 @@ void setIntensity(Graph<Content> &graph) {
 		}
 	}
 	graph.computeIntensities();
+	cerr<<"/setIntensity"<<endl;
 }
 
 template<typename Content>
 void clusterizationMST(Graph<Content> &graph, int countClusters = 1) {
-	cout<<"clusterizationMST("<<graph.vertices().size()<<"-->";
+	cerr<<"clusterizationMST("<<graph.vertices().size()<<"-->)"<<endl;
+	if(graph.vertices().size() <= 1) {cerr<<graph.vertices().size()<<")"<<endl; return;}
 	createMST_N2(graph);
 	//double r = graph.averageCost();
-	setIntensity(graph);
-	int j;
-	for(j = 1; j < countClusters; ++j)
-		graph.ruptMostIntensityEdge();
-	cout<<j<<")"<<endl;
+	//cerr<<"setIntensity(graph);"<<endl;
+	//setIntensity(graph);
+	/*for(int j = 1; j < countClusters; ++j)
+		graph.ruptMostIntensityEdge();*/
+	cerr<<"/clusterizationMST("<<"-->"<<countClusters<<")"<<endl;
 }
 
-}
+}//end nmsgraph
 
 #endif

@@ -44,11 +44,8 @@ using std::pair;
 #include "Widget.h"
 
 #include "Cluster.h"
-#include "ForEl.h"
-#include "Graph/MST.h"
 
-#define RMAX 100 //m
-const double RForEl = 10;
+#include "Graph/MST.h"
 
 extern void clearVector(vector<Point*> &pnts);
 extern void filterClustersWithOnePoint(vector<Point*> &pnts);
@@ -77,13 +74,6 @@ void statistics(const vector<Point*> &pnts) {
 	cout<<"size = "<<pnts.size()<<endl;
 }
 
-template<typename T>
-struct Cleaner {
-	Cleaner(T *ptr, void (*func)(T&)) : obj(ptr), cleanFunc(func) {}
-	~Cleaner() {cleanFunc(*obj);}
-	T *obj;
-	void (*cleanFunc)(T&);
-};
 
 void readFromFile(vector<Point*> &sources) {
 	struct ifs {
@@ -141,15 +131,10 @@ int main(int argc, char *argv[]) {
 	degreesToX(sources, (max.phi+min.phi)/2, (max.tet+min.tet)/2);
 
 	//Filter::hideSinglePoints(sources,RMAX);
-
-	vector<Point*> clusters;
-	Cleaner< vector<Point*> > cleanerClusters(&clusters, HelpFunctions::clearVector);
-	clusterizationFOREL<Point>(clusters, sources, RForEl);
+	//vector<Point*> clusters;
+	//Cleaner< vector<Point*> > cleanerClusters(&clusters, HelpFunctions::clearVector);
+	//clusterizationFOREL<Point>(clusters, sources, RForEl);
 	//Filter::filtration(clusters,1);
-	
-	GraphP graph;
-	graph.setVertices_ptr(clusters.begin(),clusters.end());
-	clusterizationMST(graph);
 
 	int ax[2];
 	ax[0] = 2;
@@ -174,7 +159,6 @@ int main(int argc, char *argv[]) {
 	QApplication app(argc,argv);
 	
 	Widget< Point > widget(&sources, ax[0], ax[1], min, max);
-	widget.setGraph(&graph);
 	widget.setRanges(x1,y1,x2,y2);
 	widget.show();
 	app.exec();

@@ -32,6 +32,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+#include <tr1/memory>
+
 namespace nmsgraph {
 
 template<typename Content>
@@ -41,7 +43,7 @@ template<typename Content>
 class Vertex {
 	public:
 		typedef Edge<Content> edge;
-		typedef set<edge*> CEdge;
+		typedef vector< std::tr1::weak_ptr<edge> > CEdge;
 		typedef typename CEdge::iterator CEiter;
 
 		Vertex(Content *ptr) : _counter(1),_flag(false), _ptr(ptr) {
@@ -62,7 +64,7 @@ class Vertex {
 		}
 
 		const CEdge& edges() const {return _edges;}
-		void addEdge(edge *pe) {_edges.insert(pe);}
+		void addEdge(const std::tr1::shared_ptr<edge> &pe) {_edges.push_back(pe);}
 
 		int count() const {return _counter;}
 		void addCount(int c) {_counter += c;} 

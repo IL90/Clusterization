@@ -36,6 +36,8 @@ using std::list;
 using std::cout;
 using std::endl;
 
+#include <tr1/memory>
+
 #include "Vertex.h"
 #include "Edge.h"
 
@@ -46,27 +48,32 @@ class Graph {
 	public:
 		typedef Edge<Content> edge;
 		typedef Vertex<Content> vertex;
-		typedef vector<vertex*> CVertex;
-		typedef vector<edge*> CEdge;
+		typedef vector< std::tr1::shared_ptr<vertex> > CVertex;
+		typedef vector< std::tr1::shared_ptr<edge> > CEdge;
 		
 		Graph() {}
-		~Graph() {
-			for(typename CVertex::iterator it = _vertices.begin(); it != _vertices.end(); ++it)
-				delete *it;
-			for(typename CEdge::iterator it = _edges.begin(); it != _edges.end(); ++it)
-				delete *it;
+		~Graph() {clear();}
+		void clear() {
+			cout<<"Graph::clear"<<endl;
+			_vertices.clear();
+			_edges.clear();
+			cout<<"/Graph::clear"<<endl;
 		}
 		template<class InputIterator>
 		void setVertices(InputIterator first, InputIterator last) {
+			cout<<"Graph::setVertices"<<endl;
+			clear();
 			while (first!=last) {
-				_vertices.push_back(new vertex(&(*first)));
+				_vertices.push_back(std::tr1::shared_ptr<vertex>(new vertex(&(*first))));
 				++first;
 			}
+			cout<<"/Graph::setVertices"<<endl;
 		}
 		template<class InputIterator>
 		void setVertices_ptr(InputIterator first, InputIterator last) {
+			clear();
 			while (first!=last) {
-				_vertices.push_back(new vertex(*first));
+				_vertices.push_back(std::tr1::shared_ptr<vertex>(new vertex( (*first) )));
 				++first;
 			}
 		}
@@ -90,10 +97,10 @@ class Graph {
 		}
 		const CVertex &vertices()  const {return _vertices;}
 		const CEdge &edges() const {return _edges;}
-		void addEdge(vertex *lptr, vertex *rptr, double cost) {
-			_edges.push_back(new edge(lptr, rptr, cost));
-			_edges.back()->lvertex()->addEdge(_edges.back());
-			_edges.back()->rvertex()->addEdge(_edges.back());
+		void addEdge(const std::tr1::shared_ptr<vertex> &lptr, const std::tr1::shared_ptr<vertex> &rptr, double cost) {
+			_edges.push_back(std::tr1::shared_ptr<edge>(new edge(lptr, rptr, cost)));
+			_edges.back()->lvertex().lock()->addEdge(_edges.back());
+			_edges.back()->rvertex().lock()->addEdge(_edges.back());
 		}
 	private:
 		Graph(const Graph &);

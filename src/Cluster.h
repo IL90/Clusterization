@@ -30,6 +30,7 @@ using std::vector;
 
 #include <iostream>
 using std::cout;
+using std::cerr;
 using std::endl;
 
 class Event;
@@ -93,6 +94,15 @@ class Point {
 
 void compute(vector<Point*>& pnts);
 
+template<typename T>
+struct Cleaner {
+	Cleaner(T *ptr, void (*func)(T&)) : obj(ptr), cleanFunc(func) {}
+	~Cleaner() {cleanFunc(*obj);}
+	T *obj;
+	void (*cleanFunc)(T&);
+};
+
+
 class HelpFunctions {
 public:
 	static void delPtr(Point* &ptr) {
@@ -100,8 +110,10 @@ public:
 		ptr = NULL;
 	}
 	static void clearVector(vector<Point*> &pnts) {
-		for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it)
+		for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
 			delete (*it);
+			*it = NULL;
+		}
 	}
 	static void clearVectorAndSrc(vector<Point*> &pnts);
 };
@@ -122,15 +134,18 @@ public:
 		pnts.erase( std::remove(pnts.begin(), pnts.end(), static_cast<Point*>(0)), pnts.end()); 
 	}
 	static void hideSinglePoints(vector<Point*> &pnts, double Rmax) {
-		cout<<"hideSinglePoints("<<pnts.size();
+		cerr<<"hideSinglePoints("<<pnts.size()<<"-->";
 		if(pnts.empty()) return;
 		double Rmax2 = Rmax*Rmax;
 		bool flag;
 		vector<Point*>::iterator it1, it2;
 		for(it1 = pnts.begin(); it1 != pnts.end(); ++it1) {
-			if((*it1)->isHide()) continue;
+			(*it1)->setHide(false);
+		}
+		int visible = pnts.size();
+		for(it1 = pnts.begin(); it1 != pnts.end(); ++it1) {
 			flag = false;
-			for(it2 = it1; it2 != pnts.end(); ++it2) {
+			for(it2 = pnts.begin(); it2 != pnts.end(); ++it2) {
 				if(it1 == it2) continue;
 				if((*it2)->isHide()) continue;
 				if(Point::ro2(*(*it1),*(*it2)) < Rmax2) {
@@ -138,11 +153,13 @@ public:
 					break;
 				}
 			}
-
-			if(!flag)
+			if(!flag) {
 				(*it1)->setHide(true);
+				--visible;
+			}
 		}
-		cout<<")"<<endl;
+
+		cerr<<visible<<")"<<endl;
 	}
 private:
 	static void filterNight(Point* &ptr);
