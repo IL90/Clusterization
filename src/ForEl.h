@@ -49,9 +49,6 @@ void clusterizationFOREL(vector<Content> &clusters, const vector<Content*> &sour
 	vector<Content**> ptrs;
 	int dim = tmp.dim();
 
-	for(typename Vval::iterator it = clusters.begin(); it != clusters.end(); ++it) {
-		delete (*it).psrc();
-	}
 	clusters.clear();
 
 	while(!sources.empty()) {

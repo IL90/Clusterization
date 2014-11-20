@@ -44,7 +44,7 @@ const int Point::_dim = 2;
 
 void compute(vector<Point*>& pnts) {
 	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
-		(*it)->psrc()->cmpValue();
+		(*it)->src().cmpValue();
 	}
 }
 
@@ -53,14 +53,13 @@ void compute(vector<Point*>& pnts) {
 
 /*static*/ 
 void Filter::filterNight(Point* &ptr) {
-	if(ptr->psrc()->isNight()) 
+	if(ptr->src().isNight()) 
 		HelpFunctions::delPtr(ptr);
 }
 
 /*static*/ 
 void HelpFunctions::clearVectorAndSrc(vector<Point*> &pnts) {
 	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
-		delete (*it)->psrc();
 		delete (*it);
 		*it = NULL;
 	}
@@ -69,7 +68,7 @@ void HelpFunctions::clearVectorAndSrc(vector<Point*> &pnts) {
 void degreesToX(vector<Point*> pnts,double lngAver,double latAver) {
 	Point tmp;
 	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
-		(*it)->psrc()->convertDegrees(tmp.coords().at(0),tmp.coords().at(1),lngAver,latAver);
+		(*it)->src().convertDegrees(tmp.coords().at(0),tmp.coords().at(1),lngAver,latAver);
 		(*it)->coords() = tmp.coords();
 	}
 }

@@ -56,7 +56,7 @@ public:
 		return QColor(r,g,b);
 	}
 	static QColor colorInterval(Point*lhs, Point*rhs) {
-		double d = fabs(rhs->psrc()->datetime.toTime_t() - lhs->psrc()->datetime.toTime_t())/60 ;//0 - 300
+		double d = fabs(rhs->src().datetime.toTime_t() - lhs->src().datetime.toTime_t())/60 ;//0 - 300
 		
 		int r = 0, g = 0, b = 0, alpha = 255;
 		if(d < 70) r = g = b = 255;
@@ -70,7 +70,7 @@ public:
 		return QColor(r, g, b, alpha);
 	}
 	static QColor colorHeight(Point *ptr) {
-		double d = ptr->psrc()->height();//0 - 300
+		double d = ptr->src().height();//0 - 300
 		int r = 0, g = 0, b = 0;
 		if(d < 50) r = g = b = 0;
 		else if(d < 100) r = g = b = 92;
@@ -80,7 +80,7 @@ public:
 		return QColor(r, g, b);
 	}
 	static QColor colorVelocity(Point *ptr) {
-		double d = ptr->psrc()->velocity();//0 - 100
+		double d = ptr->src().velocity();//0 - 100
 		if(d < 0.8) return QColor(Qt::black);//3km/h
 		else if(d < 1.3) return QColor(Qt::blue);//5km/h
 		else if(d < 2.8) return QColor(Qt::green);//10km/h
@@ -105,7 +105,7 @@ public:
 };
 
 bool compareTime(Point *lhs, Point *rhs) {
-	return (lhs)->psrc()->datetime.toTime_t() < (rhs)->psrc()->datetime.toTime_t();
+	return (lhs)->src().datetime.toTime_t() < (rhs)->src().datetime.toTime_t();
 }
 
 

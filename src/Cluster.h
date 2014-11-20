@@ -28,6 +28,8 @@ Contact e-mail <arkhipovsky.ilya@yandex.ru>
 #include <vector>
 using std::vector;
 
+#include <tr1/memory>
+
 #include <iostream>
 using std::cout;
 using std::cerr;
@@ -40,15 +42,15 @@ class Point {
 		typedef vector<Point*> Container;
 		Point() : _isHide(false) {
 			_x.resize(_dim, 0);
-			setSrc(0);
+			//setSrc(0);
 		}
-		Point(Event *pev) : _isHide(false) {
+		Point(const std::tr1::shared_ptr<Event> &pev) : _isHide(false) {
 			_x.resize(_dim, 0);
 			setSrc(pev);
 		}
 		Point(Point* ptr) : _isHide(false) {
 			_x.resize(_dim, 0);
-			setSrc(0);
+			//setSrc(0);
 			_pnts.push_back(ptr);
 			_x = ptr->_x;
 		}
@@ -68,10 +70,15 @@ class Point {
 		const Container &pnts() const {return _pnts;}
 
 		int dim() const {return _dim;}
-		Event *psrc() {
-			return _src;
+		const Event &src() const {
+			if(_src.get() == 0) assert(0);
+			return *_src;
 		}
-		void setSrc(Event *ptr) {_src = ptr;}
+		Event &src() {
+			if(_src.get() == 0) assert(0);
+			return *_src;
+		}
+		void setSrc(const std::tr1::shared_ptr<Event> &ptr) {_src = ptr;}
 		static double ro2(const Point &lhs, const Point &rhs) {
 			double sum = 0;
 			for(int i = 0; i < lhs.dim(); ++i) 
@@ -85,7 +92,7 @@ class Point {
 		bool isHide() {return _isHide;}
 	private:
 		static const int _dim;//dimension
-		Event *_src;//content
+		std::tr1::shared_ptr<Event> _src;//content
 		vector<double> _x;//coords
 		Container _pnts;
 		bool _isHide;

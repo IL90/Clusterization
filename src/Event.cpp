@@ -58,9 +58,9 @@ void Event::setMinMax(vector<Point*>& pnts, bool isMin) {
 	}
 	vector<Point*>::iterator it;
 	Event *tmp;
-	(*this) = *pnts.front()->psrc();
+	(*this) = pnts.front()->src();
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
-		tmp = ((*it)->psrc());
+		tmp = (&(*it)->src());
 		if(funci(tmp->day , day)) day = tmp->day;
 		if(funci(tmp->datetime.toTime_t() , datetime.toTime_t())) datetime = tmp->datetime;
 	}
@@ -79,9 +79,9 @@ void Event9::setMinMax(vector<Point*>& pnts, bool isMin) {
 	}
 	vector<Point*>::iterator it;
 	EventThis *tmp;
-	(*this) = *dynamic_cast<EventThis*>(pnts.front()->psrc());
+	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
-		tmp = dynamic_cast<EventThis*>((*it)->psrc());
+		tmp = dynamic_cast<EventThis*>((&(*it)->src()));
 		assert(tmp);
 		for(int j = 0; j < 3; ++j) {
 			if(funci(tmp->data1[j] , data1[j])) data1[j] = tmp->data1[j];
@@ -107,9 +107,9 @@ void Event2::setMinMax(vector<Point*> &pnts, bool isMin) {
 	vector<Point*>::iterator it;
 	EventThis *tmp;
 
-	(*this) = *dynamic_cast<EventThis*>(pnts.front()->psrc());
+	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
-		tmp = dynamic_cast<EventThis*>((*it)->psrc());
+		tmp = dynamic_cast<EventThis*>(&(*it)->src());
 		assert(tmp);
 		if(funcd(tmp->phi , phi)) phi = tmp->phi;
 		if(funcd(tmp->tet , tet)) tet = tmp->tet;
@@ -141,9 +141,9 @@ void Event6::setMinMax(vector<Point*> &pnts, bool isMin) {
 	}
 	vector<Point*>::iterator it;
 	EventThis *tmp;
-	(*this) = *dynamic_cast<EventThis*>(pnts.front()->psrc());
+	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
-		tmp = dynamic_cast<EventThis*>((*it)->psrc());
+		tmp = dynamic_cast<EventThis*>(&(*it)->src());
 		assert(tmp);
 		for(int j = 0; j < 3; ++j) 
 			if(funci(tmp->data1[j] , data1[j])) data1[j] = tmp->data1[j];

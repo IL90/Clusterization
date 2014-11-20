@@ -59,8 +59,8 @@ void statistics(const vector<Point*> &pnts) {
 	map<int,int> stats;
 	map<int,int>::iterator mit;
 	while(it != pnts.end()) {
-		if((mit=stats.find( difftime1(*(*it2)->psrc(), *(*it)->psrc())/60 )) == stats.end())
-			stats.insert(pair<int,int>(difftime1(*(*it2)->psrc(), *(*it)->psrc())/60, 1));
+		if((mit=stats.find( difftime1((*it2)->src(), (*it)->src())/60 )) == stats.end())
+			stats.insert(pair<int,int>(difftime1((*it2)->src(), (*it)->src())/60, 1));
 		else 
 			++(*mit).second;
 		++it;
@@ -99,6 +99,7 @@ void readFromFile(vector<Point*> &sources) {
 	std::auto_ptr<Event> sptr;
 	Ev* tmp;
 	while(!in.eof()) {
+		cout<<"k"<<endl;
 		tmp = new Ev;
 		sptr = std::auto_ptr<Event>(tmp);
 		in>>(*tmp);
@@ -107,10 +108,9 @@ void readFromFile(vector<Point*> &sources) {
 		}
 		else {
 			sources.push_back(new Point);
-			sources.back()->setSrc(sptr.release());
+			sources.back()->setSrc(std::tr1::shared_ptr<Event>(sptr.release()));
 		}
 	}
-	delete sources.back()->psrc();
 	delete sources.back();
 	sources.pop_back();
 	qDebug()<<"loaded from file";
