@@ -45,7 +45,7 @@ bool less(T l, T r) {return l < r;}
 template<typename T>
 bool greater(T l, T r) {return l > r;}
 
-void Event::setMinMax(vector<Point*>& pnts, bool isMin) {
+void Event::setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin) {
 	bool (*funci)(int,int);
 	bool (*funcd)(double,double);
 	if(isMin) {
@@ -56,7 +56,7 @@ void Event::setMinMax(vector<Point*>& pnts, bool isMin) {
 		funci = greater;
 		funcd = greater;
 	}
-	vector<Point*>::iterator it;
+	vector< std::tr1::shared_ptr<Point> >::const_iterator it;
 	Event *tmp;
 	(*this) = pnts.front()->src();
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
@@ -65,7 +65,7 @@ void Event::setMinMax(vector<Point*>& pnts, bool isMin) {
 		if(funci(tmp->datetime.toTime_t() , datetime.toTime_t())) datetime = tmp->datetime;
 	}
 }
-void Event9::setMinMax(vector<Point*>& pnts, bool isMin) {
+void Event9::setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin) {
 	Event::setMinMax(pnts, isMin);
 	bool (*funci)(int,int);
 	bool (*funcd)(double,double);
@@ -77,7 +77,7 @@ void Event9::setMinMax(vector<Point*>& pnts, bool isMin) {
 		funci = greater;
 		funcd = greater;
 	}
-	vector<Point*>::iterator it;
+	vector< std::tr1::shared_ptr<Point> >::const_iterator it;
 	EventThis *tmp;
 	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
 	for(it = pnts.begin(); it != pnts.end(); ++it) {
@@ -92,7 +92,7 @@ void Event9::setMinMax(vector<Point*>& pnts, bool isMin) {
 	}
 }
 
-void Event2::setMinMax(vector<Point*> &pnts, bool isMin) {
+void Event2::setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin) {
 	Event::setMinMax(pnts, isMin);
 	bool (*funci)(int,int);
 	bool (*funcd)(double,double);
@@ -104,7 +104,7 @@ void Event2::setMinMax(vector<Point*> &pnts, bool isMin) {
 		funci = greater;
 		funcd = greater;
 	}
-	vector<Point*>::iterator it;
+	vector< std::tr1::shared_ptr<Point> >::const_iterator it;
 	EventThis *tmp;
 
 	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
@@ -127,7 +127,7 @@ void Event2::setMinMax(vector<Point*> &pnts, bool isMin) {
 	}
 }
 
-void Event6::setMinMax(vector<Point*> &pnts, bool isMin) {
+void Event6::setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin) {
 	Event::setMinMax(pnts, isMin);
 	bool (*funci)(int,int);
 	bool (*funcd)(double,double);
@@ -139,7 +139,7 @@ void Event6::setMinMax(vector<Point*> &pnts, bool isMin) {
 		funci = greater;
 		funcd = greater;
 	}
-	vector<Point*>::iterator it;
+	vector< std::tr1::shared_ptr<Point> >::const_iterator it;
 	EventThis *tmp;
 	(*this) = *dynamic_cast<EventThis*>(&pnts.front()->src());
 	for(it = pnts.begin(); it != pnts.end(); ++it) {

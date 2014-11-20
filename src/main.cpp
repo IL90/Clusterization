@@ -49,7 +49,7 @@ using std::pair;
 
 extern void clearVector(vector<Point*> &pnts);
 extern void filterClustersWithOnePoint(vector<Point*> &pnts);
-extern void degreesToX(vector<Point*> pnts,double lngAver,double latAver);
+extern void degreesToX(vector< std::tr1::shared_ptr<Point> > &pnts,double lngAver,double latAver);
 
 void statistics(const vector<Point*> &pnts) {
 	if(pnts.size() <= 1) return;
@@ -75,7 +75,7 @@ void statistics(const vector<Point*> &pnts) {
 }
 
 
-void readFromFile(vector<Point*> &sources) {
+void readFromFile(vector< std::tr1::shared_ptr<Point> > &sources) {
 	struct ifs {
 		ifs() {
 			QString path1 = QString(".") + QDir::separator();
@@ -107,11 +107,10 @@ void readFromFile(vector<Point*> &sources) {
 			sptr.reset();
 		}
 		else {
-			sources.push_back(new Point);
+			sources.push_back(std::tr1::shared_ptr<Point>(new Point));
 			sources.back()->setSrc(std::tr1::shared_ptr<Event>(sptr.release()));
 		}
 	}
-	delete sources.back();
 	sources.pop_back();
 	qDebug()<<"loaded from file";
 }
@@ -120,8 +119,8 @@ int main(int argc, char *argv[]) {
 	typedef nmsgraph::Graph<Point> GraphP;
 	typedef GraphP::vertex vertex;
 
-	vector<Point*> sources;
-	Cleaner< vector<Point*> > cleanerSources(&sources, HelpFunctions::clearVectorAndSrc);
+	vector< std::tr1::shared_ptr<Point> > sources;
+	//Cleaner< vector<Point*> > cleanerSources(&sources, HelpFunctions::clearVectorAndSrc);
 	readFromFile(sources);
 	compute(sources);
 

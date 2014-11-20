@@ -39,7 +39,7 @@ class Event;
 
 class Point {
 	public:
-		typedef vector<Point*> Container;
+		typedef vector< std::tr1::weak_ptr<Point> > Container;
 		Point() : _isHide(false) {
 			_x.resize(_dim, 0);
 			//setSrc(0);
@@ -48,7 +48,7 @@ class Point {
 			_x.resize(_dim, 0);
 			setSrc(pev);
 		}
-		Point(Point* ptr) : _isHide(false) {
+		Point(const std::tr1::shared_ptr<Point> &ptr) : _isHide(false) {
 			_x.resize(_dim, 0);
 			//setSrc(0);
 			_pnts.push_back(ptr);
@@ -57,7 +57,7 @@ class Point {
 		double stddeviation() const {//only after calcAverage
 			double sum = 0;
 			for(Container::const_iterator it = _pnts.begin(); it != _pnts.end(); ++it)
-				sum += ro(**it, *this);
+				sum += ro(*(*it).lock(), *this);
 			return sqrt(sum/_pnts.size());
 		}
 		int weight() const {return _pnts.size();}
@@ -90,6 +90,7 @@ class Point {
 		}
 		void setHide(bool b) {_isHide = b;}
 		bool isHide() {return _isHide;}
+
 	private:
 		static const int _dim;//dimension
 		std::tr1::shared_ptr<Event> _src;//content
@@ -99,7 +100,7 @@ class Point {
 };
 
 
-void compute(vector<Point*>& pnts);
+void compute(vector< std::tr1::shared_ptr<Point> >& pnts);
 
 template<typename T>
 struct Cleaner {
@@ -140,12 +141,12 @@ public:
 		for_each(pnts.begin(), pnts.end(), vfunc);
 		pnts.erase( std::remove(pnts.begin(), pnts.end(), static_cast<Point*>(0)), pnts.end()); 
 	}
-	static void hideSinglePoints(vector<Point*> &pnts, double Rmax) {
+	static void hideSinglePoints(vector< std::tr1::shared_ptr<Point> > &pnts, double Rmax) {
 		cerr<<"hideSinglePoints("<<pnts.size()<<"-->";
 		if(pnts.empty()) return;
 		double Rmax2 = Rmax*Rmax;
 		bool flag;
-		vector<Point*>::iterator it1, it2;
+		vector< std::tr1::shared_ptr<Point> >::iterator it1, it2;
 		for(it1 = pnts.begin(); it1 != pnts.end(); ++it1) {
 			(*it1)->setHide(false);
 		}
@@ -153,7 +154,7 @@ public:
 		for(it1 = pnts.begin(); it1 != pnts.end(); ++it1) {
 			flag = false;
 			for(it2 = pnts.begin(); it2 != pnts.end(); ++it2) {
-				if(it1 == it2) continue;
+				if((*it1).get() == (*it2).get()) continue;
 				if((*it2)->isHide()) continue;
 				if(Point::ro2(*(*it1),*(*it2)) < Rmax2) {
 					flag = true;

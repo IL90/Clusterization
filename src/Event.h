@@ -35,6 +35,8 @@ using std::vector;
 #include <list>
 using std::list;
 
+#include <tr1/memory>
+
 using std::cout;
 using std::endl;
 #include "Sun.h"
@@ -52,7 +54,7 @@ public:
 	friend std::istream &operator>>(std::istream& in, Event& event);
 	virtual void input(std::istream& in);
 	virtual ~Event() {}
-	virtual void setMinMax(vector<Point*>& pnts, bool isMin);
+	virtual void setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin);
 	virtual double axis(int) = 0;
 	virtual bool isNight() const {return true;}
 	virtual void cmpValue() {cout<<"Event::cmpValue"<<endl;}
@@ -69,7 +71,7 @@ public:
 	friend std::ostream &operator<<(std::ostream& out, const Event9& event);
 	friend std::istream &operator>>(std::istream& in, Event9& event);
 	void input(std::istream& in);
-	void setMinMax(vector<Point*>& pnts, bool isMin);
+	void setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin);
 	double axis(int i) {
 		switch(i) {
 			case 0:
@@ -108,7 +110,7 @@ public:
 	friend std::ostream &operator<<(std::ostream& out, const EventThis& event);
 	friend std::istream &operator>>(std::istream& in, EventThis& event);
 	void input(std::istream& in);
-	void setMinMax(vector<Point*>& pnts, bool isMin);
+	void setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin);
 	double axis(int i) {
 		switch(i) {
 			case 0:
@@ -192,7 +194,7 @@ public:
 	friend std::ostream &operator<<(std::ostream& out, const Event6& event);
 	friend std::istream &operator>>(std::istream& in, Event6& event);
 	void input(std::istream& in);
-	void setMinMax(vector<Point*>& pnts, bool isMin);
+	void setMinMax(const vector< std::tr1::shared_ptr<Point> > &pnts, bool isMin);
 	double axis(int i) {
 		switch(i) {
 			case 0:

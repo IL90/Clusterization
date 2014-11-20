@@ -42,8 +42,8 @@ using std::set;
  
 const int Point::_dim = 2;
 
-void compute(vector<Point*>& pnts) {
-	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
+void compute(vector< std::tr1::shared_ptr<Point> >& pnts) {
+	for(vector<std::tr1::shared_ptr<Point> >::iterator it = pnts.begin(); it != pnts.end(); ++it) {
 		(*it)->src().cmpValue();
 	}
 }
@@ -65,9 +65,9 @@ void HelpFunctions::clearVectorAndSrc(vector<Point*> &pnts) {
 	}
 }
 
-void degreesToX(vector<Point*> pnts,double lngAver,double latAver) {
+void degreesToX(vector< std::tr1::shared_ptr<Point> > &pnts,double lngAver,double latAver) {
 	Point tmp;
-	for(vector<Point*>::iterator it = pnts.begin(); it != pnts.end(); ++it) {
+	for(vector< std::tr1::shared_ptr<Point> >::iterator it = pnts.begin(); it != pnts.end(); ++it) {
 		(*it)->src().convertDegrees(tmp.coords().at(0),tmp.coords().at(1),lngAver,latAver);
 		(*it)->coords() = tmp.coords();
 	}

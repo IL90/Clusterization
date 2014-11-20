@@ -46,7 +46,7 @@ typedef Event2 Ev;
 template< typename Point >
 class Widget: public QWidget {
 	typedef nmsgraph::Graph<Point> GraphP;
-	typedef vector<Point*> CPoint;
+	typedef vector< std::tr1::shared_ptr<Point> > CPoint;
 	
 public:
 	Widget(CPoint *pdat, int ax1, int ax2, const Ev &min_, const Ev &max_, QWidget *parent = NULL) : QWidget(parent) {
